@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Embed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 6px; /* Decreased padding from 20px to 6px */
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h2 {
+            margin: 0;
+            font-size: 16px; /* Decreased font size */
+            flex: 1;
+        }
+        .icon {
+            font-size: 50px; /* Decreased font size from 70px to 50px */
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            overflow: hidden; /* Prevent overflow */
+        }
+        .input-container {
+            margin: 10px auto;
+            max-height: 300px; /* Set maximum height for scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+        .input-box {
+            margin: 10px;
+        }
+        .input-box input {
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(100% - 22px);
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        iframe {
+            width: 100%; /* Make iframe responsive */
+            height: 315px; /* Fixed height for landscape (16:9 ratio) */
+            border: none;
+            box-sizing: border-box;
+        }
+        #videoList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Adjusted to 2 columns */
+            gap: 10px; /* Increased gap between videos */
+            padding: 10px;
+            margin-top: 80px;
+        }
+        .button-container {
+            margin: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:disabled {
+            background-color: #b0bec5;
+            cursor: not-allowed;
+        }
+        .close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #007BFF;
+        }
+
+        /* Media query for mobile devices */
+        @media (max-width: 600px) {
+            header h2 {
+                font-size: 14px; /* Further reduce font size for mobile */
+            }
+            .icon {
+                font-size: 40px; /* Further reduce icon size for mobile */
+            }
+            iframe {
+                height: 180px; /* Set a smaller height for mobile */
+            }
+            #videoList {
+                grid-template-columns: 1fr; /* Stack videos in one column */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>multiple & Loop YouTube Videos</h2>
+        <h5>Click here for playing video 👉</h5>
+        <span class="icon" onclick="toggleModal()">&#x1F4C4;</span>
+    </header>
+
+    <div id="videoList">
+        <!-- Videos will be appended here -->
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal()">&times;</span>
+            <div class="input-container">
+                <div class="input-box">
+                    <label for="videoCount">Number of Videos to Show (Max 10):</label>
+                    <input type="number" id="videoCount" min="1" max="10" value="1" placeholder="Enter a number" oninput="generateVideoInputs()">
+                </div>
+                <div id="videoInputsContainer"></div>
+            </div>
+            <div class="button-container">
+                <button onclick="updateVideos()">Show Videos</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Extract YouTube video ID from URL
+        function extractVideoId(url) {
+            const match = url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|v\/|(?:.+\/)?)([a-zA-Z0-9_-]{11}))|(?:youtu\.be\/([a-zA-Z0-9_-]{11}))/);
+            return match ? (match[1] || match[2]) : null;
+        }
+
+        // Generate input fields for video links based on user input
+        function generateVideoInputs() {
+            const count = Math.max(1, Math.min(10, parseInt(document.getElementById('videoCount').value) || 0)); // Minimum of 1, maximum of 10
+            const container = document.getElementById('videoInputsContainer');
+            container.innerHTML = ''; // Clear existing inputs
+
+            for (let i = 0; i < count; i++) {
+                const inputBox = document.createElement('div');
+                inputBox.className = 'input-box';
+                inputBox.innerHTML = `
+                    <label for="videoUrl${i}">Video URL ${i + 1}:</label>
+                    <input type="text" id="videoUrl${i}" placeholder="Enter YouTube video URL">
+                    <label for="videoShowCount${i}">Number of Videos from this Link:</label>
+                    <input type="number" id="videoShowCount${i}" min="1" value="1" style="width: 50px;">
+                `;
+                container.appendChild(inputBox);
+            }
+        }
+
+        // Update videos based on input URLs
+        function updateVideos() {
+            const videoList = document.getElementById('videoList');
+            videoList.innerHTML = ''; // Clear existing videos
+
+            const count = Math.min(10, parseInt(document.getElementById('videoCount').value) || 0);
+
+            for (let i = 0; i < count; i++) {
+                const videoUrl = document.getElementById(`videoUrl${i}`).value.trim();
+                const videoId = extractVideoId(videoUrl);
+                const videoShowCount = Math.max(1, parseInt(document.getElementById(`videoShowCount${i}`).value) || 1);
+
+                if (videoId) {
+                    for (let j = 0; j < videoShowCount; j++) {
+                        const container = document.createElement('div');
+                        container.classList.add('video-container');
+
+                        // Set iframe height for landscape mode
+                        const iframeHeight = 315; // Fixed height for landscape (16:9 ratio)
+                        container.innerHTML = `
+                            <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}" 
+                                    class="video" 
+                                    style="height: ${iframeHeight}px;" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen></iframe>
+                        `;
+                        videoList.appendChild(container);
+                    }
+                } else if (videoUrl) {
+                    alert(`Invalid YouTube URL: ${videoUrl}`);
+                }
+            }
+        }
+
+        // Toggle modal visibility
+        function toggleModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            generateVideoInputs(); // Generate default input box when modal opens
+        }
+    </script>
+</body>
+</html>
+BRDL
+<!-- partial -->
+  
+</body>
+</html>
